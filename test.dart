@@ -1,142 +1,192 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
+import 'package:flutter_application_1/main.dart';
+import 'package:flutter_application_1/modul/process.dart';
+import 'package:flutter_application_1/modul/user.dart';
+import 'package:get/get.dart';
 import '../modul/metoch.dart';
 
-class HomeScreen extends StatefulWidget {
+class SearchState extends StatefulWidget {
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  _SearchStateState createState() => _SearchStateState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
-  var inputText = "";
-  Map<String, dynamic>? userMap;
-  bool isLoading = false;
-  final TextEditingController _search = TextEditingController();
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+class _SearchStateState extends State<SearchState> {
+  String name = "";
+  List<Map<String, dynamic>> data = [
+    {
+      'name': 'John',
+      'image':
+          'https://i.picsum.photos/id/237/200/300.jpg?hmac=TmmQSbShHz9CdQm0NkEjx1Dyh_Y984R9LpNrpvH2D_U',
+      'email': 'john@gmail.com'
+    },
+    {
+      'name': 'Eric',
+      'image':
+          'https://i.picsum.photos/id/866/200/300.jpg?hmac=rcadCENKh4rD6MAp6V_ma-AyWv641M4iiOpe1RyFHeI',
+      'email': 'eric@gmail.com'
+    },
+    {
+      'name': 'Mark',
+      'image':
+          'https://i.picsum.photos/id/449/200/300.jpg?grayscale&hmac=GcAk7XLOGeBrqzrEpBjAzBcZFJ9bvyMwvL1QENQ23Zc',
+      'email': 'mark@gmail.com'
+    },
+    {
+      'name': 'Ela',
+      'image':
+          'https://i.picsum.photos/id/3/200/300.jpg?blur=2&hmac=CgtEzNwC4BLEa1z5r0oGOsZPj5wJlqjU615MLuFillY',
+      'email': 'ela@gmail.com'
+    },
+    {
+      'name': 'Sue',
+      'image':
+          'https://i.picsum.photos/id/497/200/300.jpg?hmac=IqTAOsl408FW-5QME1woScOoZJvq246UqZGGR9UkkkY',
+      'email': 'sue@gmail.com'
+    },
+    {
+      'name': 'Lothe',
+      'image':
+          'https://i.picsum.photos/id/450/200/300.jpg?hmac=EAnz3Z3i5qXfaz54l0aegp_-5oN4HTwiZG828ZGD7GM',
+      'email': 'lothe@gmail.com'
+    },
+    {
+      'name': 'Alyssa',
+      'image':
+          'https://i.picsum.photos/id/169/200/200.jpg?hmac=MquoCIcsCP_IxfteFmd8LfVF7NCoRre282nO9gVD0Yc',
+      'email': 'Alyssa@gmail.com'
+    },
+    {
+      'name': 'Nichols',
+      'image':
+          'https://i.picsum.photos/id/921/200/200.jpg?hmac=6pwJUhec4NqIAFxrha-8WXGa8yI1pJXKEYCWMSHroSU',
+      'email': 'Nichols@gmail.com'
+    },
+    {
+      'name': 'Welch',
+      'image':
+          'https://i.picsum.photos/id/845/200/200.jpg?hmac=KMGSD70gM0xozvpzPM3kHIwwA2TRlVQ6d2dLW_b1vDQ',
+      'email': 'Welch@gmail.com'
+    },
+    {
+      'name': 'Delacruz',
+      'image':
+          'https://i.picsum.photos/id/250/200/200.jpg?hmac=23TaEG1txY5qYZ70amm2sUf0GYKo4v7yIbN9ooyqWzs',
+      'email': 'Delacruz@gmail.com'
+    },
+    {
+      'name': 'Tania',
+      'image':
+          'https://i.picsum.photos/id/237/200/200.jpg?hmac=zHUGikXUDyLCCmvyww1izLK3R3k8oRYBRiTizZEdyfI',
+      'email': 'Tania@gmail.com'
+    },
+    {
+      'name': 'Jeanie',
+      'image':
+          'https://i.picsum.photos/id/769/200/200.jpg?hmac=M55kAfuYOrcJ8a49hBRDhWtVLbJo88Y76kUz323SqLU',
+      'email': 'Jeanie@gmail.com'
+    }
+  ];
+
+  addData() async {
+    for (var element in data) {
+      FirebaseFirestore.instance.collection('users').add(element);
+    }
+    print('all data added');
+  }
 
   @override
   void initState() {
+    // TODO: implement initState
     super.initState();
-    WidgetsBinding.instance!.addObserver(this);
-    setStatus("Online");
-  }
-
-  void setStatus(String status) async {
-    await _firestore.collection('users').doc(_auth.currentUser!.uid).update({
-      "status": status,
-    });
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      // online
-      setStatus("Online");
-    } else {
-      // offline
-      setStatus("Offline");
-    }
-  }
-
-  String chatRoomId(String user1, String user2) {
-    if (user1[0].toLowerCase().codeUnits[0] >
-        user2.toLowerCase().codeUnits[0]) {
-      return "$user1$user2";
-    } else {
-      return "$user2$user1";
-    }
-  }
-
-  void onSearch() async {
-    FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
-    setState(() {
-      isLoading = true;
-    });
-
-    await _firestore
-        .collection('users')
-        .where("name", isEqualTo: _search.text)
-        .get()
-        .then((value) {
-      setState(() {
-        userMap = value.docs[0].data();
-        isLoading = false;
-      });
-      print(userMap);
-    });
+    addData();
   }
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
     return Scaffold(
         appBar: AppBar(
-          title: Text("Home Screen"),
-        ),
-        body: isLoading
-            ? Container(
-                height: size.height / 20,
-                width: size.height / 20,
-                child: CircularProgressIndicator(),
-              )
-            : Column(children: [
-                SizedBox(
-                  height: size.height / 20,
-                ),
-                TextFormField(
-                  onChanged: (val) {
-                    setState(() {
-                      inputText = val;
-                      print(inputText);
+            title: Card(
+          child: TextField(
+            decoration: InputDecoration(
+                prefixIcon: Icon(Icons.search), hintText: 'Search...'),
+            onChanged: (val) {
+              setState(() {
+                name = val;
+              });
+            },
+          ),
+        )),
+        body: StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance.collection('users').snapshots(),
+          builder: (context, snapshots) {
+            return (snapshots.connectionState == ConnectionState.waiting)
+                ? Center(
+                    child: CircularProgressIndicator(),
+                  )
+                : ListView.builder(
+                    itemCount: snapshots.data!.docs.length,
+                    itemBuilder: (context, index) {
+                      var data = snapshots.data!.docs[index].data()
+                          as Map<String, dynamic>;
+
+                      if (name.isEmpty) {
+                        return ListTile(
+                          title: Text(
+                            data['name'],
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                color: Colors.black54,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Text(
+                            data['email'],
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                color: Colors.black54,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          leading: CircleAvatar(
+                            backgroundImage: NetworkImage(data['image']),
+                          ),
+                        );
+                      }
+                      if (data['name']
+                          .toString()
+                          .toLowerCase()
+                          .startsWith(name.toLowerCase())) {
+                        return ListTile(
+                          title: Text(
+                            data['name'],
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                color: Colors.black54,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Text(
+                            data['email'],
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                color: Colors.black54,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          leading: CircleAvatar(
+                            backgroundImage: NetworkImage(data['image']),
+                          ),
+                        );
+                      }
+                      return Container();
                     });
-                  },
-                ),
-                SizedBox(
-                  height: size.height / 50,
-                ),
-                Expanded(
-                  child: Container(
-                    child: StreamBuilder(
-                        stream: FirebaseFirestore.instance
-                            .collection('users')
-                            .where("username",
-                                isGreaterThanOrEqualTo: inputText)
-                            .snapshots(),
-                        builder: (BuildContext context,
-                            AsyncSnapshot<QuerySnapshot> snapshot) {
-                          if (snapshot.hasError) {
-                            return Center(
-                              child: Text("Something went wrong"),
-                            );
-                          }
-
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return Center(
-                              child: Text("Loading"),
-                            );
-                          }
-
-                          return ListView(
-                            children: snapshot.data!.docs
-                                .map((DocumentSnapshot document) {
-                              Map<String, dynamic> data =
-                                  document.data() as Map<String, dynamic>;
-                              return Card(
-                                elevation: 5,
-                                child: ListTile(
-                                  title: Text(data['users']),
-                                ),
-                              );
-                            }).toList(),
-                          );
-                        }),
-                  ),
-                ),
-              ]));
+          },
+        ));
   }
 }
