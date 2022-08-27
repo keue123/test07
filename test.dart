@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/main.dart';
 import 'package:flutter_application_1/modul/process.dart';
-import 'package:flutter_application_1/modul/user.dart';
 import 'package:get/get.dart';
 import '../modul/metoch.dart';
 
@@ -13,180 +12,98 @@ class SearchState extends StatefulWidget {
 }
 
 class _SearchStateState extends State<SearchState> {
-  String name = "";
-  List<Map<String, dynamic>> data = [
-    {
-      'name': 'John',
-      'image':
-          'https://i.picsum.photos/id/237/200/300.jpg?hmac=TmmQSbShHz9CdQm0NkEjx1Dyh_Y984R9LpNrpvH2D_U',
-      'email': 'john@gmail.com'
-    },
-    {
-      'name': 'Eric',
-      'image':
-          'https://i.picsum.photos/id/866/200/300.jpg?hmac=rcadCENKh4rD6MAp6V_ma-AyWv641M4iiOpe1RyFHeI',
-      'email': 'eric@gmail.com'
-    },
-    {
-      'name': 'Mark',
-      'image':
-          'https://i.picsum.photos/id/449/200/300.jpg?grayscale&hmac=GcAk7XLOGeBrqzrEpBjAzBcZFJ9bvyMwvL1QENQ23Zc',
-      'email': 'mark@gmail.com'
-    },
-    {
-      'name': 'Ela',
-      'image':
-          'https://i.picsum.photos/id/3/200/300.jpg?blur=2&hmac=CgtEzNwC4BLEa1z5r0oGOsZPj5wJlqjU615MLuFillY',
-      'email': 'ela@gmail.com'
-    },
-    {
-      'name': 'Sue',
-      'image':
-          'https://i.picsum.photos/id/497/200/300.jpg?hmac=IqTAOsl408FW-5QME1woScOoZJvq246UqZGGR9UkkkY',
-      'email': 'sue@gmail.com'
-    },
-    {
-      'name': 'Lothe',
-      'image':
-          'https://i.picsum.photos/id/450/200/300.jpg?hmac=EAnz3Z3i5qXfaz54l0aegp_-5oN4HTwiZG828ZGD7GM',
-      'email': 'lothe@gmail.com'
-    },
-    {
-      'name': 'Alyssa',
-      'image':
-          'https://i.picsum.photos/id/169/200/200.jpg?hmac=MquoCIcsCP_IxfteFmd8LfVF7NCoRre282nO9gVD0Yc',
-      'email': 'Alyssa@gmail.com'
-    },
-    {
-      'name': 'Nichols',
-      'image':
-          'https://i.picsum.photos/id/921/200/200.jpg?hmac=6pwJUhec4NqIAFxrha-8WXGa8yI1pJXKEYCWMSHroSU',
-      'email': 'Nichols@gmail.com'
-    },
-    {
-      'name': 'Welch',
-      'image':
-          'https://i.picsum.photos/id/845/200/200.jpg?hmac=KMGSD70gM0xozvpzPM3kHIwwA2TRlVQ6d2dLW_b1vDQ',
-      'email': 'Welch@gmail.com'
-    },
-    {
-      'name': 'Delacruz',
-      'image':
-          'https://i.picsum.photos/id/250/200/200.jpg?hmac=23TaEG1txY5qYZ70amm2sUf0GYKo4v7yIbN9ooyqWzs',
-      'email': 'Delacruz@gmail.com'
-    },
-    {
-      'name': 'Tania',
-      'image':
-          'https://i.picsum.photos/id/237/200/200.jpg?hmac=zHUGikXUDyLCCmvyww1izLK3R3k8oRYBRiTizZEdyfI',
-      'email': 'Tania@gmail.com'
-    },
-    {
-      'name': 'Jeanie',
-      'image':
-          'https://i.picsum.photos/id/769/200/200.jpg?hmac=M55kAfuYOrcJ8a49hBRDhWtVLbJo88Y76kUz323SqLU',
-      'email': 'Jeanie@gmail.com'
-    }
-  ];
+  final Stream<QuerySnapshot> _usersStream =
+      FirebaseFirestore.instance.collection('users').snapshots();
 
-  addData() async {
-    for (var element in data) {
-      FirebaseFirestore.instance.collection('users').add(element);
-    }
-    print('all data added');
-  }
+  CollectionReference users = FirebaseFirestore.instance.collection('users');
 
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    addData();
+  String name = '';
+
+  Future<void> addUser() {
+    // Call the user's CollectionReference to add a new user
+    return users
+        .add({
+          'name': name, // John Doe
+        })
+        .then((value) => print("User Added"))
+        .catchError((error) => print("Failed to add user: $error"));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-            title: Card(
-          child: TextField(
-            decoration: InputDecoration(
-                prefixIcon: Icon(Icons.search), hintText: 'Search...'),
-            onChanged: (val) {
-              setState(() {
-                name = val;
-              });
-            },
+      appBar: AppBar(
+        title: Text('hello'),
+      ),
+      body: SingleChildScrollView(
+        child: Container(
+          margin: EdgeInsets.symmetric(
+              vertical: MediaQuery.of(context).size.height * 0.04,
+              horizontal: MediaQuery.of(context).size.width * 0.04),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              const Text(
+                'Enter user name',
+                style: TextStyle(fontSize: 16),
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              TextField(
+                onChanged: (value) {
+                  //Do something with the user input.
+                  name = value;
+                },
+                decoration: const InputDecoration(
+                  hintText: 'Enter your password.',
+                  contentPadding:
+                      EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                  ),
+                ),
+              ),
+              const SizedBox(
+                height: 5,
+              ),
+              ElevatedButton.icon(
+                  onPressed: () {
+                    addUser();
+                  },
+                  icon: Icon(Icons.add),
+                  label: Text('Add user')),
+              const SizedBox(
+                height: 20,
+              ),
+              StreamBuilder<QuerySnapshot>(
+                  stream: _usersStream,
+                  builder: (BuildContext context,
+                      AsyncSnapshot<QuerySnapshot> snapshot) {
+                    if (snapshot.hasError) {
+                      return const Text('Something went wrong');
+                    }
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Text("Loading");
+                    }
+                    return ListView(
+                      shrinkWrap: true,
+                      children:
+                          snapshot.data!.docs.map((DocumentSnapshot document) {
+                        Map<String, dynamic> data =
+                            document.data()! as Map<String, dynamic>;
+                        return ListTile(
+                          title: Text(data['name']),
+                        );
+                      }).toList(),
+                    );
+                  })
+            ],
           ),
-        )),
-        body: StreamBuilder<QuerySnapshot>(
-          stream: FirebaseFirestore.instance.collection('users').snapshots(),
-          builder: (context, snapshots) {
-            return (snapshots.connectionState == ConnectionState.waiting)
-                ? Center(
-                    child: CircularProgressIndicator(),
-                  )
-                : ListView.builder(
-                    itemCount: snapshots.data!.docs.length,
-                    itemBuilder: (context, index) {
-                      var data = snapshots.data!.docs[index].data()
-                          as Map<String, dynamic>;
-
-                      if (name.isEmpty) {
-                        return ListTile(
-                          title: Text(
-                            data['name'],
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                                color: Colors.black54,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold),
-                          ),
-                          subtitle: Text(
-                            data['email'],
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                                color: Colors.black54,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold),
-                          ),
-                          leading: CircleAvatar(
-                            backgroundImage: NetworkImage(data['image']),
-                          ),
-                        );
-                      }
-                      if (data['name']
-                          .toString()
-                          .toLowerCase()
-                          .startsWith(name.toLowerCase())) {
-                        return ListTile(
-                          title: Text(
-                            data['name'],
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                                color: Colors.black54,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold),
-                          ),
-                          subtitle: Text(
-                            data['email'],
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                                color: Colors.black54,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold),
-                          ),
-                          leading: CircleAvatar(
-                            backgroundImage: NetworkImage(data['image']),
-                          ),
-                        );
-                      }
-                      return Container();
-                    });
-          },
-        ));
+        ),
+      ),
+    );
   }
 }
+
